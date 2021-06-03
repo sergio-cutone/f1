@@ -4,7 +4,7 @@
 
 ## Demo
 
-[Demo](https://demos.sergiocutone.com/f1/)
+[https://demos.sergiocutone.com/f1/](https://demos.sergiocutone.com/f1/)
 
 ## Installation
 
