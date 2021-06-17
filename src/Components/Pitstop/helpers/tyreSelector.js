@@ -1,4 +1,3 @@
-import React from "react"
 import soft from "../../../img/red.svg"
 import medium from "../../../img/yellow.svg"
 import hard from "../../../img/white.svg"

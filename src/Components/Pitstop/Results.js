@@ -1,9 +1,34 @@
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
 
-const Results = ({ scenario, onNewGame }) => {
-  const [moreData, moreDataState] = useState(false)
+const Results = ({ scenario, onNewGame, setTopPitStops }) => {
+  const [moreData, setMoreData] = useState(false)
   const pitMsg = useRef("You had an excellent Pit-Stop!")
   const correctTyre = scenario.expected === scenario.endtire ? true : false
+
+  const fetchSave = useCallback(
+    async (
+      starting_tyre,
+      selected_tyre,
+      ideal_end_tyre,
+      pit_lap,
+      ideal_pit_lap,
+      pit_time,
+      post_pit_position,
+      final_position
+    ) => {
+      await fetch(
+        `https://demos.sergiocutone.com/api/f1companion?starting_tyre=${starting_tyre}&selected_tyre=${selected_tyre}&ideal_end_tyre=${ideal_end_tyre}&pit_lap=${pit_lap}&ideal_pit_lap=${ideal_pit_lap}&pit_time=${pit_time}&post_pit_position=${post_pit_position}&final_position=${final_position}`
+      )
+        .then(response => {
+          return response.json()
+        })
+        .then(function (data) {
+          setTopPitStops(data)
+        })
+    },
+    []
+  )
+
   const correctLap =
     scenario.pitlap - scenario.box > 5
       ? 0
@@ -20,7 +45,7 @@ const Results = ({ scenario, onNewGame }) => {
       : scenario.goodpit
 
   const finalPosition = (pitTime, correctTyre, correctLap) => {
-    let position = "1st"
+    let position = 1
     let score = 100
     score = !correctTyre ? score - 50 : score
     score = !correctLap ? score - 20 : score
@@ -35,29 +60,42 @@ const Results = ({ scenario, onNewGame }) => {
     }
 
     if (score < 30) {
-      position = "12th"
+      position = 12
       pitMsg.current = "You got stuck in the Pit-Stop."
     } else if (score < 50) {
-      position = "10th"
+      position = 10
       pitMsg.current = "You spent way too long in the Pit-Stop."
     } else if (score < 60) {
-      position = "8th"
+      position = 8
       pitMsg.current = "You spent too long in the Pit-Stop."
     } else if (score < 70) {
-      position = "6th"
+      position = 6
       pitMsg.current = "You need to be quicker in the Pit-Stop."
     } else if (score < 80) {
-      position = "4th"
+      position = 4
       pitMsg.current = "You did a fine job in your Pit-Stop."
     } else if (score < 90) {
-      position = "2nd"
+      position = 2
       pitMsg.current = "You did a great job in your Pit-Stop."
     } else {
-      position = "1st"
+      position = 1
     }
 
     return position
   }
+
+  useEffect(() => {
+    fetchSave(
+      scenario.endtire,
+      scenario.startingtire.name,
+      scenario.expected,
+      scenario.box,
+      scenario.pitlap,
+      scenario.pittime,
+      scenario.position,
+      finalPosition(scenario.pittime, correctTyre, correctLap)
+    )
+  }, [])
   return (
     <div className="text-sm">
       <p className="font-bold text-lg">Race Results</p>
@@ -93,7 +131,7 @@ const Results = ({ scenario, onNewGame }) => {
             </span>{" "}
             {finalPosition(scenario.pittime, correctTyre, correctLap)}
           </p>
-          <button onClick={() => moreDataState(true)} className="btn-gray">
+          <button onClick={() => setMoreData(true)} className="btn-gray">
             FEEDBACK
           </button>{" "}
           <button onClick={() => onNewGame()}>RESTART!</button>{" "}
@@ -108,7 +146,7 @@ const Results = ({ scenario, onNewGame }) => {
             <span className="text-yellow-400 font-bold">Final Position:</span>{" "}
             {finalPosition(scenario.pittime, correctTyre, correctLap)}
           </p>
-          <button onClick={() => moreDataState(false)} className="btn-gray">
+          <button onClick={() => setMoreData(false)} className="btn-gray">
             STATS
           </button>{" "}
           <button onClick={() => onNewGame()}>RESTART!</button>

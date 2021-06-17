@@ -1,31 +1,35 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import Years from "../helpers/years"
 
 const Drivers = () => {
-  const [driverTable, driverTableState] = useState([])
+  const [driverTable, setDriverTable] = useState([])
   const date = new Date()
   const currentYear = date.getFullYear()
-  const [year, yearState] = useState(currentYear)
+  const [year, setYear] = useState(currentYear)
 
   const handleYear = value => {
-    yearState(value)
+    setYear(value)
   }
 
-  useEffect(() => {
+  const fetchDrivers = useCallback(async () => {
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     }
-    fetch(`https://ergast.com/api/f1/${year}/drivers`, requestOptions)
+    await fetch(`https://ergast.com/api/f1/${year}/drivers`, requestOptions)
       .then(response => response.text())
       .then(result => {
         const parseString = require("xml2js").parseString
         parseString(result, function (err, result) {
-          driverTableState(result.MRData.DriverTable[0])
+          setDriverTable(result.MRData.DriverTable[0])
         })
       })
       .catch(error => console.log("error", error))
   }, [year])
+
+  useEffect(() => {
+    fetchDrivers()
+  }, [year, fetchDrivers])
 
   return (
     <>
@@ -51,7 +55,7 @@ const Drivers = () => {
                 const nationality = e.Nationality
                 const number = e.PermanentNumber
                 return (
-                  <tr key={`drivers-${i}`}>
+                  <tr key={`driver-${i}`}>
                     <td className="border border-gray-400 p-1">{driverName}</td>
                     <td className="border border-gray-400 p-1">{number}</td>
                     <td className="border border-gray-400 p-1">

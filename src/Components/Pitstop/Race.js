@@ -10,10 +10,11 @@ const Race = ({ onPitStop, scenario }) => {
   }, [])
 
   useEffect(() => {
-    if (elapsedTime === 78) {
+    if (elapsedTime === 65) {
+      onPitStop(78)
       setIsRunning(false)
     }
-  }, [elapsedTime, setIsRunning])
+  }, [elapsedTime, setIsRunning, onPitStop])
   return (
     <>
       <div className="w-60 mx-auto relative mb-3">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 
 const LastRace = ({ lastRaceResults }) => {
   const raceResults = () => {
@@ -33,6 +33,7 @@ const LastRace = ({ lastRaceResults }) => {
                   className={`${i === 0 && "bg-yellow-200"} ${
                     i === 1 && "bg-gray-200"
                   }`}
+                  key={`driver-${i}`}
                 >
                   <td className="border border-gray-400 p-1">{position}</td>
                   <td className="border border-gray-400 p-1">{driverName}</td>
@@ -53,24 +54,32 @@ const LastRace = ({ lastRaceResults }) => {
 }
 
 const Home = () => {
-  const [lastRaceResults, lastRaceResultsState] = useState([])
+  const [lastRaceResults, setLastRaceResults] = useState([])
 
-  useEffect(() => {
+  const fetchLastRaceResults = useCallback(async () => {
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     }
 
-    fetch("https://ergast.com/api/f1/current/last/results", requestOptions)
+    await fetch(
+      "https://ergast.com/api/f1/current/last/results",
+      requestOptions
+    )
       .then(response => response.text())
       .then(result => {
         const parseString = require("xml2js").parseString
         parseString(result, function (err, result) {
-          lastRaceResultsState(result.MRData.RaceTable[0].Race)
+          setLastRaceResults(result.MRData.RaceTable[0].Race)
         })
       })
       .catch(error => console.log("error", error))
   }, [])
+
+  useEffect(() => {
+    fetchLastRaceResults()
+  }, [fetchLastRaceResults])
+
   return (
     <>
       <LastRace lastRaceResults={lastRaceResults} />

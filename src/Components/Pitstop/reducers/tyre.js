@@ -32,7 +32,7 @@ const tyreReducer = (state, action) => {
             swap: 0,
           },
         ],
-        position: "1st",
+        position: 1,
         box: action.payload.start,
         startingtire: action.startingtire,
         pittime: 0,

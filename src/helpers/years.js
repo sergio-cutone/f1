@@ -15,8 +15,10 @@ const Years = ({ onYear }) => {
         onChange={e => onYear(e.target.value)}
         className="border border-black"
       >
-        {years.map(e => (
-          <option value={e}>{e}</option>
+        {years.map((e, i) => (
+          <option value={e} key={`year-${i}`}>
+            {e}
+          </option>
         ))}
       </select>
     </>

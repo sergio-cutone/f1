@@ -77,7 +77,7 @@ const TyreSelect = ({ tyreSelector, scenario, onTyreSelect }) => {
 }
 
 const ChangeTyre = ({ scenario, onTyreColourChange }) => {
-  const [lightsState, setLightsState] = useState(false)
+  const [isLights, setIsLights] = useState(false)
   const lights = useRef([0, 0, 0, 0])
   const [wheelgun] = useSound(wheelgunSFX)
 
@@ -90,7 +90,7 @@ const ChangeTyre = ({ scenario, onTyreColourChange }) => {
         lit = true
       }
     }
-    setLightsState(!lightsState)
+    setIsLights(!isLights)
 
     if (lights.current.reduce((p, c) => p + c) === 8) {
       onTyreColourChange()
@@ -109,7 +109,7 @@ const ChangeTyre = ({ scenario, onTyreColourChange }) => {
   return (
     <div>
       <p>
-        Tap the <span className="text-red-400">red lights</span> as they show up
+        Tap the <span className="text-red-400">red dots</span> as they show up
         to remove the tyre.
       </p>
       <p>
@@ -149,37 +149,37 @@ const Car = ({
   carMove,
   onSelectedTyre,
 }) => {
-  const [pop, popState] = useState(false)
-  const [tyreColour, tyreColourState] = useState(false)
+  const [pop, setPop] = useState(false)
+  const [tyreColour, setTyreColour] = useState(false)
   const selectedTyreLocation = useRef(false)
 
   useEffect(() => {
     setTimeout(() => {
-      popState("intro")
+      setPop("intro")
     }, 1500)
   }, [])
 
   const handleTyreChange = tyre => {
     if (tyreColour) {
       selectedTyreLocation.current = tyre
-      popState("changeTyre")
+      setPop("changeTyre")
     }
   }
 
   const handlePitTime = () => {
-    popState("tyreSelect")
+    setPop("tyreSelect")
     onPitTime(true)
   }
 
   const handleTyreSelect = (tyreColour, tyreName) => {
-    tyreColourState(tyreColour)
+    setTyreColour(tyreColour)
     onSelectedTyre(tyreName)
-    popState(false)
+    setPop(false)
   }
 
   const handleTyreColourChange = () => {
     onTyreSwap(tyreColour, selectedTyreLocation.current)
-    popState(false)
+    setPop(false)
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 
 const ConstructorsList = ({ constructors }) => {
   const constructorsTable = constructors.map((e, i) => {
@@ -43,27 +43,31 @@ const ConstructorsList = ({ constructors }) => {
 }
 
 const Constructors = () => {
-  const [constructors, constructorsState] = useState([])
+  const [constructorsList, setConstructorsList] = useState([])
 
-  useEffect(() => {
+  const fetchConstructors = useCallback(async () => {
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     }
 
-    fetch("https://ergast.com/api/f1/2021/constructors", requestOptions)
+    await fetch("https://ergast.com/api/f1/2021/constructors", requestOptions)
       .then(response => response.text())
       .then(result => {
         const parseString = require("xml2js").parseString
         parseString(result, function (err, result) {
-          constructorsState(result.MRData.ConstructorTable[0].Constructor)
+          setConstructorsList(result.MRData.ConstructorTable[0].Constructor)
         })
       })
       .catch(error => console.log("error", error))
   }, [])
+
+  useEffect(() => {
+    fetchConstructors()
+  }, [])
   return (
     <>
-      <ConstructorsList constructors={constructors} />
+      <ConstructorsList constructors={constructorsList} />
     </>
   )
 }

@@ -1,11 +1,11 @@
 import React from "react"
 
-const TyreSpecs = ({ screenState, tyreSelector }) => {
+const TyreSpecs = ({ setScreen, tyreSelector }) => {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-        {tyreSelector.map(e => (
-          <div>
+        {tyreSelector.map((e, i) => (
+          <div key={`tyre-${i}`}>
             <img src={e.img} alt="tyre" className="h-14 mx-auto" />
             <strong>{e.name}</strong>
             {e.extra && (
@@ -19,7 +19,7 @@ const TyreSpecs = ({ screenState, tyreSelector }) => {
           </div>
         ))}
       </div>
-      <button onClick={() => screenState("scenario")}>BACK</button>
+      <button onClick={() => setScreen("scenario")}>BACK</button>
     </>
   )
 }

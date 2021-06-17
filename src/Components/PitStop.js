@@ -6,6 +6,7 @@ import Race from "./Pitstop/Race"
 import TyreSpecs from "./Pitstop/TyreSpecs"
 import scenarioList from "./Pitstop/helpers/scenarios"
 import tyreSelector from "./Pitstop/helpers/tyreSelector"
+import TopPitsScreen from "./Pitstop/TopPitScreen"
 import useTimer from "./Pitstop/hooks/useTimer"
 import useSound from "use-sound"
 import themesongSFX from ".././sounds/themesong.mp3"
@@ -24,10 +25,12 @@ import Results from "./Pitstop/Results"
 
 const PitStop = () => {
   const [scenario, dispatchCarTyres] = useReducer(tyreReducer, [])
-  const [game, gameState] = useState(false)
-  const [screen, screenState] = useState("intro")
-  const [carMove, carMoveState] = useState(0)
+  const [isGame, setIsGame] = useState(false)
+  const [screen, setScreen] = useState("intro")
+  const [carMove, setCarMove] = useState(0)
   const { isRunning, setIsRunning, elapsedTime, setElapsedTime } = useTimer()
+  const [topPitStops, setTopPitStops] = useState(false)
+  const [isTopPitStops, setIsTopPitStops] = useState(false)
   const [themesong] = useSound(themesongSFX)
   const [box] = useSound(boxSFX)
   const [postpit] = useSound(postpitSFX)
@@ -36,12 +39,14 @@ const PitStop = () => {
 
   const handleNewGame = () => {
     themesong()
-    gameState(false)
-    screenState("intro")
-    carMoveState(0)
+    setIsGame(false)
+    setScreen("intro")
+    setCarMove(0)
     setIsRunning(false)
-    gameState(true)
+    setIsGame(true)
     setScenario()
+    setTopPitStops(false)
+    setIsTopPitStops(false)
   }
 
   const setScenario = () => {
@@ -69,15 +74,15 @@ const PitStop = () => {
         e => (swapTyreCount = e.swap ? swapTyreCount + 1 : swapTyreCount)
       )
       if (parseInt(elapsedTime) >= 16) {
-        scenario.position = "6th"
+        scenario.position = 6
       } else if (parseInt(elapsedTime) >= 14) {
-        scenario.position = "5th"
+        scenario.position = 5
       } else if (parseInt(elapsedTime) >= 12) {
-        scenario.position = "4th"
+        scenario.position = 4
       } else if (parseInt(elapsedTime) >= 10) {
-        scenario.position = "3rd"
+        scenario.position = 3
       } else if (parseInt(elapsedTime) >= 5) {
-        scenario.position = "2nd"
+        scenario.position = 2
       }
       if (elapsedTime >= 20) {
         stop()
@@ -85,18 +90,18 @@ const PitStop = () => {
         scenario.pittime = 20
         setElapsedTime(0)
         themesong()
-        screenState("raceresults")
+        setScreen("raceresults")
       }
       if (swapTyreCount === 4) {
         stop()
         postpit()
-        carMoveState(2)
+        setCarMove(2)
         scenario.pittime = elapsedTime
         setIsRunning(false)
         setTimeout(() => {
           setElapsedTime(0)
           themesong()
-          screenState("raceresults")
+          setScreen("raceresults")
         }, 1500)
       }
     }
@@ -112,11 +117,11 @@ const PitStop = () => {
   ])
 
   const handleGameExit = () => {
-    screenState("intro")
-    gameState(false)
+    setScreen("intro")
+    setIsGame(false)
     setElapsedTime(0)
     setIsRunning(false)
-    carMoveState(0)
+    setCarMove(0)
   }
 
   const handlePitStop = getTime => {
@@ -128,9 +133,9 @@ const PitStop = () => {
       },
       []
     )
-    screenState("box")
+    setScreen("box")
     setTimeout(() => {
-      carMoveState(1)
+      setCarMove(1)
     }, 250)
   }
 
@@ -161,28 +166,39 @@ const PitStop = () => {
   }
 
   const handleTyreSpecs = () => {
-    screenState("tyrespecs")
+    setScreen("tyrespecs")
   }
 
   const handleStartRace = () => {
-    screenState("race")
+    setScreen("race")
     lightsout()
   }
 
   return (
     <div>
-      {game ? (
+      {isGame ? (
         <>
           {elapsedTime > 0 && (
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 py-1 px-2 text-white z-50 bg-black text-sm rounded-b-md">
+            <div className="fixed top-0 left-1/2 transform -translate-x-1/2 py-1 px-2 text-white z-50 bg-black text-sm rounded-b-md">
               <span className="text-yellow-300 font-bold">Pit:</span>{" "}
               {elapsedTime}{" "}
               <span className="text-yellow-300 font-bold">Pos:</span>{" "}
               {scenario.position}
             </div>
           )}
+          {isTopPitStops && <TopPitsScreen topPitStops={topPitStops} />}
+          {topPitStops && (
+            <div className="fixed top-3 right-3 z-50">
+              <button
+                className="btn-yellow"
+                onClick={() => setIsTopPitStops(!isTopPitStops)}
+              >
+                {isTopPitStops ? "X" : "Top 10 Results"}
+              </button>
+            </div>
+          )}
           <GameWrapper handleGameExit={handleGameExit}>
-            {screen === "intro" && <GameIntro screenState={screenState} />}
+            {screen === "intro" && <GameIntro setScreen={setScreen} />}
             {screen === "scenario" && (
               <Scenario
                 onStartRace={handleStartRace}
@@ -191,10 +207,7 @@ const PitStop = () => {
               />
             )}
             {screen === "tyrespecs" && (
-              <TyreSpecs
-                screenState={screenState}
-                tyreSelector={tyreSelector()}
-              />
+              <TyreSpecs setScreen={setScreen} tyreSelector={tyreSelector()} />
             )}
             {screen === "race" && (
               <Race onPitStop={handlePitStop} scenario={scenario} />
@@ -210,7 +223,11 @@ const PitStop = () => {
               />
             )}
             {screen === "raceresults" && (
-              <Results scenario={scenario} onNewGame={handleNewGame} />
+              <Results
+                scenario={scenario}
+                onNewGame={handleNewGame}
+                setTopPitStops={setTopPitStops}
+              />
             )}
           </GameWrapper>
         </>

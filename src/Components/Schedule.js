@@ -1,26 +1,30 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 
 const Schedule = () => {
-  const [raceTable, raceTableState] = useState([])
+  const [raceTable, setRaceTable] = useState([])
   let nextRace = 0
   let raceCount = 0
 
-  useEffect(() => {
+  const fetchSchedule = useCallback(async () => {
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     }
 
-    fetch("https://ergast.com/api/f1/current", requestOptions)
+    await fetch("https://ergast.com/api/f1/current", requestOptions)
       .then(response => response.text())
       .then(result => {
         const parseString = require("xml2js").parseString
         parseString(result, function (err, result) {
-          raceTableState(result.MRData.RaceTable[0])
+          setRaceTable(result.MRData.RaceTable[0])
         })
       })
       .catch(error => console.log("error", error))
   }, [])
+
+  useEffect(() => {
+    fetchSchedule()
+  }, [fetchSchedule])
   return (
     <>
       {!raceTable.$ ? (
@@ -52,28 +56,24 @@ const Schedule = () => {
                   })
                   .split(", ")
                 return (
-                  <>
-                    <tr
-                      className={`${
-                        nextRace === 0
-                          ? "bg-gray-200"
-                          : nextRace === 1
-                          ? "bg-green-200"
-                          : "bg-white"
-                      }`}
-                      key={`schedule-${i}`}
-                    >
-                      <td className="border border-gray-400 p-1">{i + 1}</td>
-                      <td className="border border-gray-400 p-1">
-                        {raceDateFormat[0]}
-                        <br />
-                        {raceDateFormat[1]} est
-                      </td>
-                      <td className="border border-gray-400 p-1">
-                        {e.RaceName}
-                      </td>
-                    </tr>
-                  </>
+                  <tr
+                    className={`${
+                      nextRace === 0
+                        ? "bg-gray-200"
+                        : nextRace === 1
+                        ? "bg-green-200"
+                        : "bg-white"
+                    }`}
+                    key={`schedule-${i}`}
+                  >
+                    <td className="border border-gray-400 p-1">{i + 1}</td>
+                    <td className="border border-gray-400 p-1">
+                      {raceDateFormat[0]}
+                      <br />
+                      {raceDateFormat[1]} est
+                    </td>
+                    <td className="border border-gray-400 p-1">{e.RaceName}</td>
+                  </tr>
                 )
               })}
             </tbody>

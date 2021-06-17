@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import Years from "./../helpers/years"
 
 const ConstructorStandings = () => {
   const date = new Date()
-  const [standingsTable, standingsTableState] = useState([])
+  const [standingsTable, setStandingsTable] = useState([])
   const [year, yearState] = useState(date.getFullYear())
 
   const handleYear = value => {
     yearState(value)
   }
-  useEffect(() => {
+
+  const fetchConstructorStandings = useCallback(async () => {
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     }
-    fetch(
+    await fetch(
       `https://ergast.com/api/f1/${year}/constructorStandings`,
       requestOptions
     )
@@ -22,11 +23,15 @@ const ConstructorStandings = () => {
       .then(result => {
         const parseString = require("xml2js").parseString
         parseString(result, function (err, result) {
-          standingsTableState(result.MRData.StandingsTable[0])
+          setStandingsTable(result.MRData.StandingsTable[0])
         })
       })
       .catch(error => console.log("error", error))
   }, [year])
+
+  useEffect(() => {
+    fetchConstructorStandings()
+  }, [fetchConstructorStandings, year])
 
   return (
     <>
@@ -52,7 +57,7 @@ const ConstructorStandings = () => {
               {standingsTable.StandingsList[0].ConstructorStanding.map(
                 (e, i) => {
                   return (
-                    <tr>
+                    <tr key={`constructor-${i}`}>
                       <td className="border border-gray-400 p-1">{i + 1}</td>
                       <td className="border border-gray-400 p-1">
                         {e.Constructor[0].Name}

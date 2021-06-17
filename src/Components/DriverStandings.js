@@ -1,29 +1,37 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import Years from "../helpers/years"
 
 const DriverStandings = () => {
-  const [standingsTable, standingsTableState] = useState([])
-  const [year, yearState] = useState(2021)
+  const [standingsTable, setStandingsTable] = useState([])
+  const [year, setYear] = useState(2021)
 
   const handleYear = value => {
-    yearState(value)
+    setYear(value)
   }
 
-  useEffect(() => {
+  const fetchDriverStandings = useCallback(async () => {
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     }
-    fetch(`https://ergast.com/api/f1/${year}/driverStandings`, requestOptions)
+    await fetch(
+      `https://ergast.com/api/f1/${year}/driverStandings`,
+      requestOptions
+    )
       .then(response => response.text())
       .then(result => {
         const parseString = require("xml2js").parseString
         parseString(result, function (err, result) {
-          standingsTableState(result.MRData.StandingsTable[0])
+          setStandingsTable(result.MRData.StandingsTable[0])
         })
       })
       .catch(error => console.log("error", error))
   }, [year])
+
+  useEffect(() => {
+    fetchDriverStandings(year)
+  }, [fetchDriverStandings, year])
+
   return (
     <>
       {!standingsTable.$ ? (

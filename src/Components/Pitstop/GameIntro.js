@@ -1,6 +1,6 @@
 import React from "react"
 
-const GameIntro = ({ screenState }) => {
+const GameIntro = ({ setScreen }) => {
   return (
     <>
       <p className="text-xl font-bold">Pit-Stop Challenge</p>
@@ -13,7 +13,7 @@ const GameIntro = ({ screenState }) => {
         Be sure to read the Tyre Specs to understand how many laps each tyre is
         ideally rated for.
       </p>
-      <button onClick={() => screenState("scenario")}>NEXT</button>
+      <button onClick={() => setScreen("scenario")}>NEXT</button>
     </>
   )
 }
